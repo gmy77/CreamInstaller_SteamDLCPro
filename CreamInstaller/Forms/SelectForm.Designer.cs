@@ -192,7 +192,7 @@ namespace CreamInstaller.Forms
             // 
             this.blockProtectedHelpButton.Enabled  = false;
             this.blockProtectedHelpButton.IsAccent = false;
-            this.blockProtectedHelpButton.Font     = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.blockProtectedHelpButton.Font     = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.blockProtectedHelpButton.Location = new System.Drawing.Point(142, 0);
             this.blockProtectedHelpButton.Margin   = new System.Windows.Forms.Padding(0, 0, 1, 0);
             this.blockProtectedHelpButton.Name     = "blockProtectedHelpButton";
@@ -257,7 +257,6 @@ namespace CreamInstaller.Forms
             this.searchTextBox.Anchor      = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.searchTextBox.BackColor   = CreamInstaller.Components.ThemeManager.Surface;
             this.searchTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.searchTextBox.Font        = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.searchTextBox.ForeColor   = CreamInstaller.Components.ThemeManager.TextPrimary;
             this.searchTextBox.Location    = new System.Drawing.Point(12, 16);
             this.searchTextBox.Name        = "searchTextBox";
@@ -280,7 +279,6 @@ namespace CreamInstaller.Forms
             // 
             this.progressLabel.Anchor   = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.progressLabel.AutoEllipsis = true;
-            this.progressLabel.Font     = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.progressLabel.ForeColor = CreamInstaller.Components.ThemeManager.TextSecondary;
             this.progressLabel.Location = new System.Drawing.Point(12, 231);
             this.progressLabel.Name     = "progressLabel";
@@ -324,7 +322,7 @@ namespace CreamInstaller.Forms
             // 
             this.progressLabelGames.Anchor   = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.progressLabelGames.AutoEllipsis = true;
-            this.progressLabelGames.Font     = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.progressLabelGames.Font     = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.progressLabelGames.ForeColor = CreamInstaller.Components.ThemeManager.TextDisabled;
             this.progressLabelGames.Location = new System.Drawing.Point(12, 246);
             this.progressLabelGames.Name     = "progressLabelGames";
@@ -336,7 +334,7 @@ namespace CreamInstaller.Forms
             // 
             this.progressLabelDLCs.Anchor   = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.progressLabelDLCs.AutoEllipsis = true;
-            this.progressLabelDLCs.Font     = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.progressLabelDLCs.Font     = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.progressLabelDLCs.ForeColor = CreamInstaller.Components.ThemeManager.TextDisabled;
             this.progressLabelDLCs.Location = new System.Drawing.Point(12, 258);
             this.progressLabelDLCs.Name     = "progressLabelDLCs";
@@ -514,7 +512,7 @@ namespace CreamInstaller.Forms
             this.MinimizeBox     = true;
             this.MinimumSize     = new System.Drawing.Size(600, 420);
             this.Name            = "SelectForm";
-            this.StartPosition   = System.Windows.Forms.FormStartPosition.Manual;
+            this.StartPosition   = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text            = "SelectForm";
             this.Load           += new System.EventHandler(this.OnLoad);
             this.ResizeEnd      += new System.EventHandler(this.OnResizeEnd);

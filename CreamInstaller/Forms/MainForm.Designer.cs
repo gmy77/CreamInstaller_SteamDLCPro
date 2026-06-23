@@ -25,7 +25,7 @@ namespace CreamInstaller.Forms
             // 
             this.headerLabel.AutoSize  = false;
             this.headerLabel.Dock      = System.Windows.Forms.DockStyle.None;
-            this.headerLabel.Font      = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.headerLabel.Font      = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.headerLabel.ForeColor = CreamInstaller.Components.ThemeManager.Accent;
             this.headerLabel.Location  = new System.Drawing.Point(12, 12);
             this.headerLabel.Name      = "headerLabel";
@@ -37,7 +37,6 @@ namespace CreamInstaller.Forms
             // progressLabel
             // 
             this.progressLabel.AutoEllipsis = true;
-            this.progressLabel.Font         = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.progressLabel.ForeColor    = CreamInstaller.Components.ThemeManager.TextSecondary;
             this.progressLabel.Location     = new System.Drawing.Point(12, 44);
             this.progressLabel.Margin       = new System.Windows.Forms.Padding(3, 0, 3, 10);

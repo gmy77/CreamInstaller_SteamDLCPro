@@ -42,7 +42,6 @@ namespace CreamInstaller.Forms
             // 
             this.userInfoLabel.Anchor      = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.userInfoLabel.AutoEllipsis = true;
-            this.userInfoLabel.Font        = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.userInfoLabel.ForeColor   = CreamInstaller.Components.ThemeManager.TextSecondary;
             this.userInfoLabel.Location    = new System.Drawing.Point(12, 10);
             this.userInfoLabel.Name        = "userInfoLabel";
@@ -56,7 +55,7 @@ namespace CreamInstaller.Forms
             this.logTextBox.Anchor       = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.logTextBox.BackColor    = CreamInstaller.Components.ThemeManager.LogBg;
             this.logTextBox.BorderStyle  = System.Windows.Forms.BorderStyle.None;
-            this.logTextBox.Font         = new System.Drawing.Font("Cascadia Mono", 8.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.logTextBox.Font         = new System.Drawing.Font("Cascadia Mono", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.logTextBox.ForeColor    = CreamInstaller.Components.ThemeManager.TextPrimary;
             this.logTextBox.HideSelection = false;
             this.logTextBox.Location     = new System.Drawing.Point(12, 58);

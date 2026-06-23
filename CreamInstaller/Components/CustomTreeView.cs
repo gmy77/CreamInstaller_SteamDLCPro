@@ -146,7 +146,7 @@ internal sealed class CustomTreeView : TreeView
                 string proxy = selection.KoaloaderProxy ?? ProgramSelection.DefaultKoaloaderProxy;
                 if (selection.Koaloader)
                 {
-                    comboBoxFont ??= new(font.FontFamily, 6, font.Style, font.Unit, font.GdiCharSet, font.GdiVerticalFont);
+                    comboBoxFont ??= new(font.FontFamily, 9, font.Style, font.Unit, font.GdiCharSet, font.GdiVerticalFont);
                     ComboBoxState comboBoxState = Enabled ? ComboBoxState.Normal : ComboBoxState.Disabled;
                     text = proxy + ".dll";
                     size = TextRenderer.MeasureText(graphics, text, comboBoxFont) + new Size(6, 0);

@@ -83,6 +83,7 @@ internal static class Program
             _ = Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            Application.SetDefaultFont(new Font("Segoe UI", 13F, FontStyle.Regular, GraphicsUnit.Point));
             Application.ApplicationExit += OnApplicationExit;
             Application.ThreadException += (_, e) => e.Exception.HandleFatalException();
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
