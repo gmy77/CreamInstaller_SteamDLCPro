@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net9.0-windows</TargetFramework>
+		<TargetFramework>net9.0-windows10.0.17763.0</TargetFramework>
 		<UseWindowsForms>True</UseWindowsForms>
 		<ApplicationIcon>Resources\ini.ico</ApplicationIcon>
 		<Version>5.1.0.0</Version>
@@ -20,6 +20,10 @@
 		<DebugSymbols>true</DebugSymbols>
 		<DefineConstants>$(DefineConstants)</DefineConstants>
 		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+		<SignAssembly>False</SignAssembly>
+		<IncludeSymbols>True</IncludeSymbols>
+		<Description>Add DLC ...</Description>
+		<PackageTags>cream, api, steam</PackageTags>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<AssemblyName>$(Company)</AssemblyName>
@@ -158,6 +162,11 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Resources.resx</DependentUpon>
 		</Compile>
+		<Compile Update="Properties\Settings.Designer.cs">
+		  <DesignTimeSharedInput>True</DesignTimeSharedInput>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
 	</ItemGroup>
 	<ItemGroup>
 		<EmbeddedResource Update="Forms\SelectDialogForm.resx">
@@ -167,5 +176,11 @@
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="Properties\Settings.settings">
+	    <Generator>SettingsSingleFileGenerator</Generator>
+	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+	  </None>
 	</ItemGroup>
 </Project>

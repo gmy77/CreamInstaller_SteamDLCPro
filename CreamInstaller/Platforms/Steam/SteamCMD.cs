@@ -23,7 +23,7 @@ internal static class SteamCMD
 
     private static readonly ConcurrentDictionary<string, int> AttemptCount = new(); // the more app_updates, the longer SteamCMD should wait for app_info_print
 
-    private static readonly int[] Locks = new int[ProcessLimit];
+    private static readonly SemaphoreSlim ProcessSemaphore = new(ProcessLimit, ProcessLimit);
 
     private static readonly string ArchivePath = DirectoryPath + @"\steamcmd.zip";
     private static readonly string DllPath = DirectoryPath + @"\steamclient.dll";
@@ -49,30 +49,24 @@ internal static class SteamCMD
     // SteamCMD is an official Valve tool; launching it does not indicate malicious intent.
     private static async Task<string> Run(string appId)
     {
-    wait_for_lock:
         if (Program.Canceled)
             return "";
-        for (int i = 0; i < Locks.Length; i++)
+        await ProcessSemaphore.WaitAsync();
+        try
         {
+            if (appId != null)
+            {
+                AttemptCount.TryGetValue(appId, out int count);
+                AttemptCount[appId] = ++count;
+            }
             if (Program.Canceled)
                 return "";
-            if (Interlocked.CompareExchange(ref Locks[i], 1, 0) == 0)
-            {
-                if (appId != null)
-                {
-                    AttemptCount.TryGetValue(appId, out int count);
-                    AttemptCount[appId] = ++count;
-                }
-                if (Program.Canceled)
-                    return "";
-                string result = await RunProcessAsync(appId);
-                _ = Interlocked.Decrement(ref Locks[i]);
-                return result;
-            }
-            await Task.Delay(200);
+            return await RunProcessAsync(appId);
         }
-        await Task.Delay(200);
-        goto wait_for_lock;
+        finally
+        {
+            ProcessSemaphore.Release();
+        }
     }
 
     private static async Task<string> RunProcessAsync(string appId)
@@ -211,107 +205,107 @@ internal static class SteamCMD
     {
         if (Program.Canceled)
             return null;
-        string output;
         string appUpdateFile = $@"{AppInfoPath}\{appId}.vdf";
         int failedAttempts = 0;
-    restart:
-        if (Program.Canceled || failedAttempts >= MaxGetAppInfoRetries)
-            return null;
-        // Expire cache after CacheTtlDays days so new DLC is picked up automatically
-        if (File.Exists(appUpdateFile)
-         && (DateTime.UtcNow - File.GetLastWriteTimeUtc(appUpdateFile)).TotalDays > CacheTtlDays)
-            File.Delete(appUpdateFile);
-        if (File.Exists(appUpdateFile))
-            try
-            {
-                output = await File.ReadAllTextAsync(appUpdateFile, Encoding.UTF8);
-            }
-            catch
-            {
-                goto restart; // transient I/O – don't count as failure
-            }
-        else
+        while (!Program.Canceled && failedAttempts < MaxGetAppInfoRetries)
         {
-            output = await Run(appId) ?? "";
-            int openBracket = output.IndexOf('{');
-            int closeBracket = output.LastIndexOf('}');
-            if (openBracket != -1 && closeBracket != -1 && closeBracket > openBracket)
+            // Expire cache after CacheTtlDays days so new DLC is picked up automatically
+            if (File.Exists(appUpdateFile)
+             && (DateTime.UtcNow - File.GetLastWriteTimeUtc(appUpdateFile)).TotalDays > CacheTtlDays)
+                File.Delete(appUpdateFile);
+            string output;
+            if (File.Exists(appUpdateFile))
             {
-                output = $"\"{appId}\"\n" + output[openBracket..(1 + closeBracket)];
-                output = output.Replace("ERROR! Failed to install app '4' (Invalid platform)", "");
                 try
                 {
-                    await File.WriteAllTextAsync(appUpdateFile, output, Encoding.UTF8);
+                    output = await File.ReadAllTextAsync(appUpdateFile, Encoding.UTF8);
                 }
                 catch
                 {
-                    goto restart; // transient I/O – don't count as failure
+                    continue; // transient I/O – don't count as failure
                 }
             }
             else
             {
-                failedAttempts++;
-                if (failedAttempts < MaxGetAppInfoRetries)
-                    await Task.Delay(TimeSpan.FromSeconds(Math.Min(1 << failedAttempts, 8)));
-                goto restart;
+                output = await Run(appId) ?? "";
+                int openBracket = output.IndexOf('{');
+                int closeBracket = output.LastIndexOf('}');
+                if (openBracket != -1 && closeBracket != -1 && closeBracket > openBracket)
+                {
+                    output = $"\"{appId}\"\n" + output[openBracket..(1 + closeBracket)];
+                    output = output.Replace("ERROR! Failed to install app '4' (Invalid platform)", "");
+                    try
+                    {
+                        await File.WriteAllTextAsync(appUpdateFile, output, Encoding.UTF8);
+                    }
+                    catch
+                    {
+                        continue; // transient I/O – don't count as failure
+                    }
+                }
+                else
+                {
+                    if (++failedAttempts < MaxGetAppInfoRetries)
+                        await Task.Delay(TimeSpan.FromSeconds(Math.Min(1 << failedAttempts, 8)));
+                    continue;
+                }
             }
-        }
-        if (Program.Canceled)
-            return null;
-        if (!ValveDataFile.TryDeserialize(output, out VProperty appInfo) || appInfo.Value is VValue)
-        {
-            File.Delete(appUpdateFile);
-            failedAttempts++;
-            if (failedAttempts < MaxGetAppInfoRetries)
+            if (Program.Canceled)
+                return null;
+            if (!ValveDataFile.TryDeserialize(output, out VProperty appInfo) || appInfo.Value is VValue)
+            {
+                File.Delete(appUpdateFile);
+                if (++failedAttempts < MaxGetAppInfoRetries)
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Min(1 << failedAttempts, 8)));
+                continue;
+            }
+            if (appInfo.Value.Children().ToList().Count == 0)
+                return appInfo;
+            VToken type = appInfo.Value.GetChild("common")?.GetChild("type");
+            if (type is not null && type.ToString() != "Game")
+                return appInfo;
+            string buildid = appInfo.Value.GetChild("depots")?.GetChild("branches")?.GetChild(branch)?.GetChild("buildid")?.ToString();
+            if (buildid is null && type is not null)
+                return appInfo;
+            if (type is not null && (!int.TryParse(buildid, out int gamebuildId) || gamebuildId >= buildId))
+                return appInfo;
+            // Build ID is stale — delete caches and retry
+            List<string> dlcAppIds = await ParseDlcAppIds(appInfo);
+            foreach (string dlcAppUpdateFile in dlcAppIds.Select(id => $@"{AppInfoPath}\{id}.vdf"))
+                if (File.Exists(dlcAppUpdateFile))
+                    File.Delete(dlcAppUpdateFile);
+            if (File.Exists(appUpdateFile))
+                File.Delete(appUpdateFile);
+            if (++failedAttempts < MaxGetAppInfoRetries)
                 await Task.Delay(TimeSpan.FromSeconds(Math.Min(1 << failedAttempts, 8)));
-            goto restart;
         }
-        if (appInfo.Value.Children().ToList().Count == 0)
-            return appInfo;
-        VToken type = appInfo.Value.GetChild("common")?.GetChild("type");
-        if (type is not null && type.ToString() != "Game")
-            return appInfo;
-        string buildid = appInfo.Value.GetChild("depots")?.GetChild("branches")?.GetChild(branch)?.GetChild("buildid")?.ToString();
-        if (buildid is null && type is not null)
-            return appInfo;
-        if (type is not null && (!int.TryParse(buildid, out int gamebuildId) || gamebuildId >= buildId))
-            return appInfo;
-        List<string> dlcAppIds = await ParseDlcAppIds(appInfo);
-        foreach (string dlcAppUpdateFile in dlcAppIds.Select(id => $@"{AppInfoPath}\{id}.vdf"))
-            if (File.Exists(dlcAppUpdateFile))
-                File.Delete(dlcAppUpdateFile);
-        if (File.Exists(appUpdateFile))
-            File.Delete(appUpdateFile);
-        failedAttempts++;
-        if (failedAttempts < MaxGetAppInfoRetries)
-            await Task.Delay(TimeSpan.FromSeconds(Math.Min(1 << failedAttempts, 8)));
-        goto restart;
+        return null;
     }
 
     internal static async Task<List<string>> ParseDlcAppIds(VProperty appInfo)
         => await Task.Run(() =>
         {
-            List<string> dlcIds = new();
             if (Program.Canceled || appInfo is null)
-                return dlcIds;
+                return new List<string>();
+            HashSet<string> seen = new();
+            List<string> dlcIds = new();
+            void TryAdd(int id)
+            {
+                string s = id.ToString();
+                if (id > 0 && seen.Add(s))
+                    dlcIds.Add(s);
+            }
             VToken extended = appInfo.Value.GetChild("extended");
             if (extended is not null)
                 foreach (VToken vToken in extended.Where(p => p is VProperty { Key: "listofdlc" }))
-                {
-                    VProperty property = (VProperty)vToken;
-                    foreach (string id in property.Value.ToString().Split(","))
-                        if (int.TryParse(id, out int appId) && appId > 0 && !dlcIds.Contains("" + appId))
-                            dlcIds.Add("" + appId);
-                }
+                    foreach (string id in ((VProperty)vToken).Value.ToString().Split(","))
+                        if (int.TryParse(id, out int appId))
+                            TryAdd(appId);
             VToken depots = appInfo.Value.GetChild("depots");
-            if (depots is null)
-                return dlcIds;
-            foreach (VToken vToken in depots.Where(p => p is VProperty property && int.TryParse(property.Key, out int _)))
-            {
-                VProperty property = (VProperty)vToken;
-                if (int.TryParse(property.Value.GetChild("dlcappid")?.ToString(), out int appId) && appId > 0 && !dlcIds.Contains("" + appId))
-                    dlcIds.Add("" + appId);
-            }
+            if (depots is not null)
+                foreach (VToken vToken in depots.Where(p => p is VProperty property && int.TryParse(property.Key, out int _)))
+                    if (int.TryParse(((VProperty)vToken).Value.GetChild("dlcappid")?.ToString(), out int appId))
+                        TryAdd(appId);
             return dlcIds;
         });
 
@@ -319,24 +313,11 @@ internal static class SteamCMD
     // Kill enumerates running processes by name ("steamcmd") and terminates them.
     // Process-enumeration and process-kill APIs are used here only to clean up child
     // steamcmd.exe instances that were started by this application.
-    private static async Task Kill()
-    {
-        List<Task> tasks = Process.GetProcessesByName("steamcmd").Select(process => Task.Run(() =>
+    private static Task Kill()
+        => Task.WhenAll(Process.GetProcessesByName("steamcmd").Select(p => Task.Run(() =>
         {
-            try
-            {
-                process.Kill(true);
-                process.WaitForExit();
-                process.Close();
-            }
-            catch
-            {
-                // ignored
-            }
-        })).ToList();
-        foreach (Task task in tasks)
-            await task;
-    }
+            try { p.Kill(true); p.WaitForExit(); p.Close(); } catch { }
+        })));
 
     internal static void Dispose()
     {

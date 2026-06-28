@@ -41,12 +41,12 @@ internal static class SteamStore
                 string response = await HttpClientManager.EnsureGet($"https://store.steampowered.com/api/appdetails?appids={appId}");
                 if (response is not null)
                 {
-                    IDictionary<string, JToken> apps = (IDictionary<string, JToken>)JsonConvert.DeserializeObject(response);
+                    JObject apps = JsonConvert.DeserializeObject<JObject>(response);
                     if (apps is not null)
                         foreach (KeyValuePair<string, JToken> app in apps)
                             try
                             {
-                                AppDetails appDetails = JsonConvert.DeserializeObject<AppDetails>(app.Value.ToString());
+                                AppDetails appDetails = app.Value.ToObject<AppDetails>();
                                 if (appDetails is not null)
                                 {
                                     AppData data = appDetails.data;

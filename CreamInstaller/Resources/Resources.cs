@@ -424,6 +424,12 @@ internal static class Resources
         }
     };
 
+    private static readonly Dictionary<ResourceIdentifier, HashSet<string>> ResourceMD5Sets =
+        ResourceMD5s.ToDictionary(kv => kv.Key, kv => new HashSet<string>(kv.Value, StringComparer.OrdinalIgnoreCase));
+
+    private static readonly HashSet<string> AllResourceMD5s =
+        new(ResourceMD5s.Values.SelectMany(x => x), StringComparer.OrdinalIgnoreCase);
+
     internal static List<string> EmbeddedResources
     {
         get
@@ -614,9 +620,10 @@ internal static class Resources
     }
 
     internal static bool IsResourceFile(this string filePath, ResourceIdentifier identifier)
-        => filePath.ComputeMD5() is { } hash && ResourceMD5s[identifier].Contains(hash);
+        => filePath.ComputeMD5() is { } hash && ResourceMD5Sets[identifier].Contains(hash);
 
-    internal static bool IsResourceFile(this string filePath) => filePath.ComputeMD5() is { } hash && ResourceMD5s.Values.Any(hashes => hashes.Contains(hash));
+    internal static bool IsResourceFile(this string filePath)
+        => filePath.ComputeMD5() is { } hash && AllResourceMD5s.Contains(hash);
 
     internal enum BinaryType { Unknown = -1, BIT32 = 0, BIT64 = 6 }
 
