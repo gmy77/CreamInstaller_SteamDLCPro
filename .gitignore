@@ -337,3 +337,7 @@ ASALocalRun/
 *.zip
 *.dll
 *.dll.*
+
+# Keep embedded resource binaries required by CreamInstaller.csproj
+# (Koaloader/ScreamAPI/SmokeAPI injector DLLs are embedded resources, not build output)
+!CreamInstaller/Resources/**/*.dll
