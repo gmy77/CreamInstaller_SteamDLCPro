@@ -148,7 +148,7 @@
 	<ItemGroup>
 		<PackageReference Include="Gameloop.Vdf" Version="0.6.2" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="Onova" Version="2.6.13" />
 		<PackageReference Include="System.Reflection.Metadata" Version="9.0.0" />
 		<PackageReference Include="System.ServiceModel.Primitives" Version="10.0.652802" />
